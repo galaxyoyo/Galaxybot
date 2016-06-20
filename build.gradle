@@ -43,7 +43,7 @@ jar {
 }
 
 task fatjar(type: Jar) {
-    baseName = archivesBaseName + '-all'
+    baseName = archivesBaseName
 
     from {
         configurations.included.collect {
