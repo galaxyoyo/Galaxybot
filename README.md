@@ -1,0 +1,2 @@
+# Galaxybot
+My Discord Bot
