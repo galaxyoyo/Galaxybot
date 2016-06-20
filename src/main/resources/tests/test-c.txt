@@ -1,0 +1,5 @@
+Comment affiche-t-on un entier positif aléatoire avec pour graine l'heure actuelle dans la console en C++ ?,b,{code}cout << rand();{code},{code}srand(time(NULL)); cout << rand();{code},{code}cout << srand(time(NULL));,srand(0); cout << rand() << endl;{code}
+RÉPONSE A,a,RÉPONSE A,RÉPONSE A,RÉPONSE A,RÉPONSE A
+RÉPONSE A,a,RÉPONSE A,RÉPONSE A,RÉPONSE A,RÉPONSE A
+RÉPONSE A,a,RÉPONSE A,RÉPONSE A,RÉPONSE A,RÉPONSE A
+RÉPONSE A,a,RÉPONSE A,RÉPONSE A,RÉPONSE A,RÉPONSE A

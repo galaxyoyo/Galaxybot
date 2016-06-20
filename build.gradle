@@ -1,0 +1,75 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'application'
+apply plugin: 'maven-publish'
+
+group 'fr.galaxyoyo'
+archivesBaseName = 'Galaxybot'
+mainClassName = 'fr.galaxyoyo.discordbot.DiscordBot'
+sourceCompatibility = 1.8
+compileJava.options.encoding = 'UTF-8'
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven {
+        url "https://jitpack.io"
+    }
+    maven {
+        url "http://arathia.fr/maven"
+    }
+}
+
+configurations {
+    included
+    compile.extendsFrom included
+}
+
+dependencies {
+    included 'commons-io:commons-io:2.5'
+    included 'org.apache.commons:commons-csv:1.3'
+    included 'commons-codec:commons-codec:1.10'
+    included 'com.github.austinv11:Discord4J:2.4.9'
+    included 'org.slf4j:slf4j-simple:1.7.9'
+    included 'org.scilab.forge:jlatexmath:1.0.4'
+}
+
+jar {
+    from 'LICENSE'
+    from 'LICENSE.LESSER'
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
+}
+
+task fatjar(type: Jar) {
+    baseName = archivesBaseName + '-all'
+
+    from {
+        configurations.included.collect {
+            it.isDirectory() ? it : zipTree(it).matching {
+                exclude {
+                    it.toString().contains('META-INF') && it.toString() != "META-INF" && !it.toString().contains("MANIFEST.MF") || it
+                            .toString().contains("about.html")
+                }
+            }
+        }
+    }
+    with jar
+
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId group
+            artifactId archivesBaseName
+            version = version
+
+            from components.java
+        }
+    }
+}
