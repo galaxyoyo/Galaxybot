@@ -12,4 +12,9 @@ public interface Command
 	String[] getAliases();
 
 	String getHelp();
+
+	default boolean isVisible()
+	{
+		return true;
+	}
 }

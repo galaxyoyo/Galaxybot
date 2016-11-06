@@ -1,11 +1,9 @@
 package fr.galaxyoyo.discordbot;
 
-import sx.blah.discord.api.IListener;
+import sx.blah.discord.api.events.IListener;
 import sx.blah.discord.handle.impl.events.ReadyEvent;
-import sx.blah.discord.handle.impl.obj.Channel;
-import sx.blah.discord.handle.impl.obj.Guild;
+import sx.blah.discord.handle.obj.Status;
 
-import java.util.Optional;
 import java.util.concurrent.Executors;
 
 public class ReadyListener implements IListener<ReadyEvent>
@@ -15,18 +13,6 @@ public class ReadyListener implements IListener<ReadyEvent>
 	{
 		Executors.newSingleThreadExecutor().execute(() ->
 		{
-			while (DiscordBot.getSdd() == null)
-			{
-				DiscordBot.setSdd((Guild) event.getClient().getGuildByID("186941943941562369"));
-				try
-				{
-					Thread.sleep(50L);
-				}
-				catch (InterruptedException ex)
-				{
-					ex.printStackTrace();
-				}
-			}
 			try
 			{
 				event.getClient().changeUsername("Galaxybot");
@@ -35,9 +21,11 @@ public class ReadyListener implements IListener<ReadyEvent>
 			{
 				ex.printStackTrace();
 			}
-			event.getClient().updatePresence(false, Optional.of("Démineur"));
-			DiscordBot.setBotChannel((Channel) event.getClient().getChannelByID("186943017746300928"));
+
+			event.getClient().changeStatus(Status.game("dessiner des p*i*s (pains)"));
 			DiscordBot.logger.info("Bot started!");
+
+			// DiscordBot.getClient().getGuildByID("227476905723559936").getRoles().forEach(role -> System.out.println(role.getName() + ": " + role.getID()));
 		});
 	}
 }

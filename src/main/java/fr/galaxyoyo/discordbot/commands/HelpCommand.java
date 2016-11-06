@@ -12,6 +12,9 @@ public class HelpCommand implements Command
 		builder.append("**Aide de Galaxybot :**\n``-----------------``\n");
 		for (Command cmd : CommandListener.getAllCommands())
 		{
+			if (!cmd.isVisible())
+				continue;
+
 			String space = "";
 			for (int i = 0; i < 16 - cmd.getName().length(); ++i)
 			{

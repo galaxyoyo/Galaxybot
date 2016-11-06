@@ -1,14 +1,14 @@
 package fr.galaxyoyo.discordbot.games;
 
 import fr.galaxyoyo.discordbot.DiscordBot;
-import sx.blah.discord.api.EventSubscriber;
+import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
 import sx.blah.discord.handle.impl.obj.Channel;
 import sx.blah.discord.handle.impl.obj.Message;
 import sx.blah.discord.handle.impl.obj.User;
 import sx.blah.discord.util.DiscordException;
-import sx.blah.discord.util.HTTP429Exception;
 import sx.blah.discord.util.MissingPermissionsException;
+import sx.blah.discord.util.RateLimitException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +39,7 @@ public class Minesweeper
 	{
 		if (parties.containsKey(channel))
 		{
-			DiscordBot.sendMessage(channel, "Une partie de démineur est déjà en cours sur ce canal !");
+			channel.sendMessage("Une partie de démineur est déjà en cours sur ce canal !");
 			return;
 		}
 
@@ -48,19 +48,20 @@ public class Minesweeper
 		DiscordBot.getClient().getDispatcher().registerListener(ms);
 
 
-		DiscordBot.sendMessage(channel, "Démarrage d'une partie de démineur par @" + player.getName() + " !", player.getID());
-		DiscordBot.sendMessage(channel, "[Démineur] @" + player.getName() + " Quelle doit être la largeur de la grille ? [MAX : " + MAX_WIDTH + "]", player.getID());
+		channel.sendMessage("Démarrage d'une partie de démineur par " + player.mention() + " !");
+		channel.sendMessage("[Démineur] " + player.mention() + " Quelle doit être la largeur de la grille ? [MAX : " + MAX_WIDTH + "]");
 	}
 
 	public void stop()
 	{
 		try
 		{
+			channel.unpin(msg);
 			parties.remove(channel);
 			DiscordBot.getClient().getDispatcher().unregisterListener(this);
-			DiscordBot.sendMessage(channel, "[Démineur] Fin de la partie.");
+			channel.sendMessage("[Démineur] Fin de la partie.");
 		}
-		catch (MissingPermissionsException | HTTP429Exception | DiscordException ex)
+		catch (MissingPermissionsException | DiscordException | RateLimitException ex)
 		{
 			ex.printStackTrace();
 		}
@@ -106,8 +107,8 @@ public class Minesweeper
 							ok = false;
 						else
 							width = i;
-						DiscordBot.sendMessage(channel, "[Démineur] @" + player.getName() + " Quelle doit être la hauteur de la grille ? [MAX : " +
-								Math.min(MAX_HEIGHT, 14 * 14 / width) + "]", player.getID());
+						channel.sendMessage("[Démineur] " + player.mention() + " Quelle doit être la hauteur de la grille ? [MAX : " +
+								Math.min(MAX_HEIGHT, 14 * 14 / width) + "]");
 					}
 					else if (height <= 0)
 					{
@@ -116,7 +117,7 @@ public class Minesweeper
 							ok = false;
 						else
 							height = i;
-						DiscordBot.sendMessage(channel, "[Démineur] @" + player.getName() + " Combien de mines dans la grille ? [MAX : " + (width * height - 1) + "]", player.getID());
+						channel.sendMessage("[Démineur] " + player.mention() + " Combien de mines dans la grille ? [MAX : " + (width * height - 1) + "]");
 					}
 					else
 					{
@@ -128,11 +129,11 @@ public class Minesweeper
 							mines = i;
 							wins = i;
 						}
-						DiscordBot.sendMessage(channel, "[Démineur] @" + player.getName() + " C'est parti pour une grille de " + width + "x" + height + " avec " + mines + " mine" +
-								(mines > 1 ? "s" : "") + " !", player.getID());
-						DiscordBot.sendMessage(channel, "[Démineur] @" + player.getName() + " Pour jouer, tape les coordoonées de la case à déterrer (par exemple B;4) et rajoutant " +
+						channel.sendMessage("[Démineur] " + player.mention() + " C'est parti pour une grille de " + width + "x" + height + " avec " + mines + " mine" +
+								(mines > 1 ? "s" : "") + " !");
+						channel.sendMessage("[Démineur] " + player.mention() + " Pour jouer, tape les coordoonées de la case à déterrer (par exemple B;4) et rajoutant " +
 								"F:" +
-								" devant pour mettre un drapeau (par exemple, F:E;3)", player.getID());
+								" devant pour mettre un drapeau (par exemple, F:E;3)");
 						table = new int[width][height];
 						mineTable = new boolean[width][height];
 						generate();
@@ -146,8 +147,7 @@ public class Minesweeper
 			}
 
 			if (!ok)
-				DiscordBot.sendMessage(channel,
-						"[Démineur] @" + player.getName() + " \"" + content + "\" n'est pas un nombre entier strictement positif inférieur à " + max + ".");
+				channel.sendMessage("[Démineur] " + player.mention() + " \"" + content + "\" n'est pas un nombre entier strictement positif inférieur à " + max + ".");
 			return;
 		}
 
@@ -161,20 +161,20 @@ public class Minesweeper
 		String[] split = content.split(";");
 		if (split.length != 2)
 		{
-			DiscordBot.sendMessage(channel, "[Démineur] @" + player.getName() + "  Les coordonnées doivent être sous la forme X;Y ou F:X;Y.", player.getID());
+			channel.sendMessage("[Démineur] " + player.mention() + "  Les coordonnées doivent être sous la forme X;Y ou F:X;Y.");
 			return;
 		}
 
 		if (split[0].length() != 1)
 		{
-			DiscordBot.sendMessage(channel, "[Démineur] @" + player.getName() + "  L'abscisse ne doit comporter qu'une seule lettre.", player.getID());
+			channel.sendMessage("[Démineur] " + player.mention() + "  L'abscisse ne doit comporter qu'une seule lettre.");
 			return;
 		}
 
 		int x = split[0].charAt(0) - 'A';
 		if (x < 0 || x >= width)
 		{
-			DiscordBot.sendMessage(channel, "[Démineur] @" + player.getName() + "  L'abscisse doît être comprise entre A et " + (char) ('A' + width - 1) + ".", player.getID());
+			channel.sendMessage("[Démineur] " + player.mention() + "  L'abscisse doît être comprise entre A et " + (char) ('A' + width - 1) + ".");
 			return;
 		}
 
@@ -184,13 +184,13 @@ public class Minesweeper
 			y = Integer.parseInt(split[1]) - 1;
 			if (y < 0 || y >= height)
 			{
-				DiscordBot.sendMessage(channel, "[Démineur] @" + player.getName() + "  L'ordonnée doît être comprise entre 1 et " + height + ".", player.getID());
+				channel.sendMessage("[Démineur] " + player.mention() + "  L'ordonnée doît être comprise entre 1 et " + height + ".");
 				return;
 			}
 		}
 		catch (NumberFormatException ex)
 		{
-			DiscordBot.sendMessage(channel, "[Démineur] @" + player.getName() + " \"" + split[1] + "\" n'est pas un nombre entier valide.", player.getID());
+			channel.sendMessage("[Démineur] " + player.mention() + " \"" + split[1] + "\" n'est pas un nombre entier valide.");
 			return;
 		}
 
@@ -277,7 +277,7 @@ public class Minesweeper
 	{
 		try
 		{
-			DiscordBot.sendMessage(channel, "[Démineur] @" + player.getName() + "  Félécitations, vous avez gagné !", player.getID());
+			channel.sendMessage("[Démineur] " + player.mention() + "  Félécitations, vous avez gagné !");
 		}
 		catch (Exception ex)
 		{
@@ -302,9 +302,6 @@ public class Minesweeper
 
 	public void showTable() throws Exception
 	{
-		if (msg != null)
-			msg.delete();
-
 		StringBuilder content = new StringBuilder("```     ");
 		for (int i = 0; i < width; ++i)
 		{
@@ -354,6 +351,12 @@ public class Minesweeper
 
 		content.append("```");
 
-		msg = DiscordBot.sendMessage(channel, content.toString());
+		if (msg != null)
+			msg.edit(content.toString());
+		else
+		{
+			msg = (Message) channel.sendMessage(content.toString());
+			channel.pin(msg);
+		}
 	}
 }
